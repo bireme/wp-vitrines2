@@ -2,8 +2,15 @@
 /**
  * Plugin Name:  Builder Vitrine
  * Description:  Editor visual de vitrines para WooCommerce/WordPress.
+<<<<<<< HEAD
+ * Version:      1.3.11
+ * Author:       Antonio
+ * Author URI:   https://tonilopes.com.br
+ * Plugin URI:   https://tonilopes.com.br
+=======
  * Version:      1.3.16
  * Author:       Toni Lopes
+>>>>>>> df00f61dbf5f0db1ef0abf43d469da8196abce2f
  * Text Domain:  builder-vitrine
  */
 
