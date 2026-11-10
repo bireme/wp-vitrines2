@@ -175,20 +175,13 @@ class Vitrine_Layout {
                     ? $position
                     : 'auto';
             }
-
-            // Descarta itens totalmente vazios (ex.: exclusão parcial / rascunho limpo).
-            $has_content = ( '' !== $title || '' !== trim( wp_strip_all_tags( $text ) ) || '' !== $icon );
-            if ( ! $has_content ) {
-                continue;
-            }
-
             $normalized_items[] = $normalized_item;
         }
 
         $settings['layout_mode'] = isset( $settings['layout_mode'] ) && 'grade' === sanitize_key( $settings['layout_mode'] )
             ? 'grade'
             : 'circular';
-        $settings['items'] = array_values( $normalized_items );
+        $settings['items'] = $normalized_items;
 
         return $settings;
     }

@@ -24,29 +24,6 @@
 
     var elements   = vitrineData.elements || {};
     var selectedId = null;
-
-    var ALIGN_SELECT_OPTIONS = {
-        left: 'Esquerda',
-        center: 'Centro',
-        right: 'Direita'
-    };
-
-    function normalizeAlignFieldSchema(field) {
-        if (!field || field.name !== 'align') return field;
-        return $.extend({}, field, {
-            type: 'select',
-            options: $.extend({}, ALIGN_SELECT_OPTIONS, field.options || {})
-        });
-    }
-
-    // Garante select de alinhamento mesmo com schema antigo em cache.
-    Object.keys(elements).forEach(function (slug) {
-        if (!elements[slug] || !Array.isArray(elements[slug].fields)) return;
-        if (slug !== 'text' && slug !== 'button' && slug !== 'image' && slug !== 'shortcode' && slug !== 'html') return;
-        elements[slug].fields = elements[slug].fields.map(function (field) {
-            return normalizeAlignFieldSchema(field);
-        });
-    });
     var settingsPanelItemId = null;
     var itemgridExpandedIdx = null;
     var itemgridSortInstances = [];
@@ -1852,18 +1829,21 @@
             return '<div class="vitrine-settings-section-title">' + escapeHtml(field.label) + '</div>';
         }
 
-        // Compatibilidade: alinhamento antigo como input text vira select.
-        if ((item.type === 'text' || item.type === 'button' || item.type === 'image' || item.type === 'shortcode' || item.type === 'html') && field.name === 'align') {
-            field = normalizeAlignFieldSchema(field);
+        // Compatibilidade com instalações que ainda enviam o schema antigo
+        // do Texto (align como input text) no objeto localizado pelo PHP.
+        if (item.type === 'text' && field.name === 'align') {
+            field = $.extend({}, field, {
+                type: 'select',
+                options: {
+                    left: 'Esquerda',
+                    center: 'Centro',
+                    right: 'Direita'
+                }
+            });
         }
 
         var val = item.settings[field.name] !== undefined ? item.settings[field.name] : (elDef.defaults[field.name] || '');
         var inputHtml = '';
-
-        // Última linha de defesa: alinhamento nunca cai no input de texto livre.
-        if (field.name === 'align' && field.type !== 'select') {
-            field = normalizeAlignFieldSchema(field);
-        }
 
         switch (field.type) {
             case 'textarea':
@@ -1911,13 +1891,10 @@
             }
             case 'select':
                 var opts = field.options || {};
-                if (field.name === 'align' && (!opts || !Object.keys(opts).length)) {
-                    opts = ALIGN_SELECT_OPTIONS;
-                }
                 inputHtml = '<select class="vitrine-field" data-field="' + escapeAttr(field.name) + '">';
                 for (var optKey in opts) {
                     if (opts.hasOwnProperty(optKey)) {
-                        inputHtml += '<option value="' + escapeAttr(optKey) + '"' + (String(val) === String(optKey) ? ' selected' : '') + '>' + escapeHtml(opts[optKey]) + '</option>';
+                        inputHtml += '<option value="' + escapeAttr(optKey) + '"' + (val === optKey ? ' selected' : '') + '>' + escapeHtml(opts[optKey]) + '</option>';
                     }
                 }
                 inputHtml += '</select>';
@@ -3721,13 +3698,10 @@
 
         var $section = $(this).closest('.vitrine-aranha-section');
         var key = $section.data('aranha-key');
-        var idx = parseInt($(this).closest('.vitrine-aranha-item').data('aranha-idx'), 10);
+        var idx = $(this).closest('.vitrine-aranha-item').data('aranha-idx');
 
-        if (item.settings[key] && !isNaN(idx)) {
+        if (item.settings[key]) {
             item.settings[key].splice(idx, 1);
-            item.settings[key] = item.settings[key].filter(function (ai) {
-                return !!ai;
-            });
         }
 
         if (aranhaExpandedIdx === idx) {

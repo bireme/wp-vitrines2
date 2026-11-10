@@ -27,7 +27,6 @@ class Vitrine_Editor {
     }
 
     /**
-     * 
      * Define que o post type vitrine só aceita 1 coluna.
      */
     public function screen_layout_columns( $columns ) {
